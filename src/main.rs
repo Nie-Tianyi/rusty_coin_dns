@@ -35,24 +35,29 @@ use rand::prelude::SliceRandom;
 
 #[get("/")]
 async fn index() -> impl Responder {
-    /// the index page of the DNS server
+    // the index page of the DNS server
+    // test the server is running
+    // return "Hello World!"
     HttpResponse::Ok().body("Hello World!")
 }
 
 #[post("/deregister")]
 async fn deregister(info: web::Json<Node>) -> impl Responder {
-    /// deregister a node from the DNS server
+    // deregister a node from the DNS server
+    let mut nodes = NODES.lock().unwrap();
 
-    NODES.lock().unwrap().retain(|node| {
+    nodes.retain(|node| {
         node.ipv4_address != info.ipv4_address || node.port != info.port
     });
+
+    println!("nodes: {:?}", nodes);
 
     HttpResponse::Ok().body(format!("deregister node {}:{} successfully", info.ipv4_address, info.port))
 }
 
 #[post("/register")]
 async fn register(info: web::Json<Node>) -> impl Responder {
-    /// register a node with the DNS server
+    // register a node with the DNS server
     let node = info.into_inner();
     let ipv4_address = node.ipv4_address;
     let port = node.port;
@@ -61,17 +66,21 @@ async fn register(info: web::Json<Node>) -> impl Responder {
         ipv6_address: None,
         port,
     };
-    NODES.lock().unwrap().push(node);
+    let mut nodes = NODES.lock().unwrap();
+    nodes.push(node);
+    println!("nodes: {:?}", nodes);
 
     HttpResponse::Ok().body(format!("register node {}:{} successfully", ipv4_address, port))
 }
 
 #[get("/query")]
 async fn query() -> impl Responder {
-    /// query the existing active nodes in the network
-    /// randomly poll a node from the list of active nodes
-    /// and return its IP address & port & public key
+    // query the existing active nodes in the network
+    // randomly poll a node from the list of active nodes
+    // and return its IP address & port & public key
     let nodes = NODES.lock().unwrap();
+
+    println!("nodes: {:?}", nodes);
 
     if nodes.is_empty() {
         return HttpResponse::Ok().json("no active nodes in the network");
@@ -111,6 +120,14 @@ static NODES: Lazy<Arc<Mutex<Vec<Node>>>> = Lazy::new(||Arc::new(Mutex::new(Vec:
 async fn main() -> std::io::Result<()> {
     const DNS_SERVER_IP: &str = "127.0.0.1";
     const DNS_SERVER_PORT: u16 = 8080;
+
+    println!("\
+    DNS server for the rusty coin\n\
+    the nodes are able to:\n\
+    this server is only for adding new node in a network\n\
+    - register themselves to the DNS server\n\
+    - query the existing active nodes in the network\n\
+    ");
 
     println!("DNS server is listening on http://{}:{}", DNS_SERVER_IP, DNS_SERVER_PORT);
     HttpServer::new(|| {

@@ -1,0 +1,43 @@
+###
+POST http://127.0.0.1:8080/register
+Content-Type: application/json
+
+{
+  "ipv4_address": "127.0.0.1",
+  "port": 8080
+}
+
+###
+GET http://127.0.0.1:8080/query
+Content-Type: application/json
+
+###
+GET http://127.0.0.1:8080/
+Content-Type: application/json
+
+###
+POST http://127.0.0.1:8080/deregister
+Content-Type: application/json
+
+{
+  "ipv4_address": "127.0.0.1",
+  "port": 8080
+}
+
+###
+POST http://127.0.0.1:8080/register
+Content-Type: application/json
+
+{
+"ipv4_address": "127.0.0.1",
+"port": 8081
+}
+
+###
+POST http://127.0.0.1:8080/deregister
+Content-Type: application/json
+
+{
+  "ipv4_address": "127.0.0.1",
+  "port": 8081
+}
